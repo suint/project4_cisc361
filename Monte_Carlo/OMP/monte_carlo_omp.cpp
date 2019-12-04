@@ -47,7 +47,8 @@ int main(int argc, char** argv)
     pi = 4*(double(circle_points) / double(INTERVAL));
 
     double runtime = omp_get_wtime() - st;
-    cout << " Number of threads: " << atoi(argv[1]) << endl;
+    cout << " Input size: " << atol(argv[1]) << endl;
+    cout << " Number of threads: " << atoi(argv[2]) << endl;
     cout << " Error = " << abs(M_PI - pi) << endl;
     printf(" total: %f s\n", runtime);
 

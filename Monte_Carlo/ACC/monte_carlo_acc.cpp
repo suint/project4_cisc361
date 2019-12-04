@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     // Initializing rand()
     long long seed;
     long long id;
-    long long offset;
+    long long offset = 0;
     curandState_t state;
     
 
@@ -35,11 +35,10 @@ int main(int argc, char** argv)
 
     double st = omp_get_wtime();
 
-    #pragma acc parallel private(state)
+    #pragma acc parallel private(state, id, seed)
     {
         id = __pgi_gangidx();
         seed = 12345ULL+id*477;
-        offset = 0;
         curand_init(seed, id, offset, &state);
 
         #pragma acc loop reduction(+: circle_points) private(rand_x, rand_y)
@@ -59,6 +58,7 @@ int main(int argc, char** argv)
     pi = 4*(double(circle_points) / double(INTERVAL));
 
     double runtime = omp_get_wtime() - st;
+    cout << " Input size: " << atol(argv[1]) << endl;
     cout << " Final Estimation of Pi = " << pi << endl;
     cout << " Error = " << abs(M_PI - pi) << endl;
     printf(" total: %f s\n", runtime);
