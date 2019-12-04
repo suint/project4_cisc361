@@ -6,6 +6,8 @@
 #include <math.h>
 #include <omp.h>
 #include <cmath>
+#include <openacc.h>
+#include "openacc_curand.h"
 
 // Defines precision for x and y values. More the 
 // interval, more the number of significant digits 
@@ -15,39 +17,49 @@ using namespace std;
 int main(int argc, char** argv)
 {
     const long INTERVAL = atol(argv[1]);
-    omp_set_num_threads(atoi(argv[2]));
 
     int i;
     double rand_x, rand_y, pi;
     long circle_points = 0;
-    unsigned int tmp;
+    // unsigned int tmp;
 
     // Initializing rand()
-    srand(time(NULL));
+    long long seed;
+    long long id;
+    long long offset;
+    curandState_t state;
+    
 
     // Total Random numbers generated = possible x
     // values * possible y values
 
     double st = omp_get_wtime();
 
-    #pragma omp parallel for reduction(+: circle_points) private(tmp, rand_x, rand_y) schedule(static)
-    for (i = 0; i < INTERVAL; i++) {
+    #pragma acc parallel private(state)
+    {
+        id = __pgi_gangidx();
+        seed = 12345ULL+id*477;
+        offset = 0;
+        curand_init(seed, id, offset, &state);
 
-        // Randomly generated x and y values
-        rand_x = double(rand_r(&tmp)) / RAND_MAX;
-        rand_y = double(rand_r(&tmp)) / RAND_MAX;
+        #pragma acc loop reduction(+: circle_points) private(rand_x, rand_y)
+        for (i = 0; i < INTERVAL; i++) {
 
-        // Checking if (x, y) lies inside the define
-        // circle with R=1
-        if (rand_x * rand_x + rand_y * rand_y <= 1)
-            circle_points++;
+            // Randomly generated x and y values
+            rand_x = curand_uniform_double(&state);
+            rand_y = curand_uniform_double(&state);
+
+            // Checking if (x, y) lies inside the define
+            // circle with R=1
+            if (rand_x * rand_x + rand_y * rand_y <= 1)
+                circle_points++;
+        }
     }
-    
     // Final Estimated Value
     pi = 4*(double(circle_points) / double(INTERVAL));
 
     double runtime = omp_get_wtime() - st;
-    cout << " Number of threads: " << atoi(argv[1]) << endl;
+    cout << " Final Estimation of Pi = " << pi << endl;
     cout << " Error = " << abs(M_PI - pi) << endl;
     printf(" total: %f s\n", runtime);
 

@@ -14,11 +14,11 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    const int INTERVAL = atoi(argv[1]);
+    const long INTERVAL = atol(argv[1]);
 
     int i;
     double rand_x, rand_y, pi;
-    int circle_points = 0;
+    long circle_points = 0;
     unsigned int tmp;
 
     // Initializing rand()
@@ -42,10 +42,9 @@ int main(int argc, char** argv)
     }
     
     // Final Estimated Value
-    pi = 4*(double(circle_points) / INTERVAL);
+    pi = 4*(double(circle_points) / double(INTERVAL));
 
     double runtime = omp_get_wtime() - st;
-    cout << " Number of threads: " << atoi(argv[1]) << endl;
     cout << " Final Estimation of Pi = " << pi << endl;
     cout << " Error = " << abs(M_PI - pi) << endl;
     printf(" total: %f s\n", runtime);
