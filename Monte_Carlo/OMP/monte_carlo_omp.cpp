@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     const long INTERVAL = atol(argv[1]);
     omp_set_num_threads(atoi(argv[2]));
 
-    int i;
+    long i;
     double rand_x, rand_y, pi;
     long circle_points = 0;
     unsigned int tmp;
